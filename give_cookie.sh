@@ -13,22 +13,18 @@ if [ "$cookie" == "A" -o "$cookie" == "B" ]; then
 	lockfile-create --retry 1 /srv/http/writeable/cookie_lock
 	if [ $? -eq 0 ]; then
 		echo got the lock send away!
-		motor=0
 		if [ "$cookie" == "A" ]; then
-			motor=6
-		elif [ "$cookie" == "B" ] ; then
-			motor=5
-		fi
-		if [ $motor -ne 0 ]; then
 			echo ok lets move the right motor!
-			/usr/local/bin/servod &
+			/root/atosdv2/pi-blaster/pi-blaster --pcm &
 			sleep 0.1
-			echo ${motor}=249 > /dev/servoblaster
+			echo 5=0.2 > /dev/pi-blaster
 			sleep 1.5
-			echo ${motor}=63 > /dev/servoblaster
+			echo 5=0.063 > /dev/pi-blaster
 			sleep 1.5
-			echo ${motor}=0 > /dev/servoblaster
-			killall servod
+			echo 5=0 > /dev/pi-blaster
+			killall pi-blaster
+		elif [ "$cookie" == "B" ] ; then
+			/root/atosdv2/single_cookie/single_cookie
 		fi
 		lockfile-remove /srv/http/writeable/cookie_lock
 	else

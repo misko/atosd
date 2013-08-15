@@ -12,9 +12,9 @@ function redirect($section) {
 	header("Location: http://$host$uri/$extra");	
 }
 
-$username = $_POST["username"];
-$password = $_POST["password"];
-if (isset($username) || isset($password)) {
+if (isset($_POST["username"]) || isset($_POST["password"])) {
+	$username = $_POST["username"];
+	$password = $_POST["password"];
 	if ($username=="atos" && $password=="cookies") {
         	$_SESSION["username"] = $username;
 		redirect("live");

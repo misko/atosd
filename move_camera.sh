@@ -8,19 +8,19 @@ fi
 
 direction=$1
 
-inc=0
+inc=0.005
 if [ "$direction" == "U" ]; then
-	inc=+7
+	inc=$inc
 elif [ "$direction" == "D" ]; then
-	inc=-7
+	inc=-$inc
 else
 	echo "WRONG PARAM"
 	exit
 fi	
 
-max=246
-reset=180
-min=65
+max=0.21
+reset=0.11
+min=0.01
 
 
 last=`cat /srv/http/camera_position`
@@ -33,16 +33,17 @@ fi
 #get the lock
 lockfile-create --retry 1 /srv/http/writeable/cookie_lock
 if [ $? -eq 0 ]; then
-	new=`echo "" | awk -v last=$last -v max=$max -v min=$min -v inc=$inc '{ new=last+inc; if (new<min) {new=min} ; if (new>max) {new=max}; print new}'`
+	new=`awk -v last=$last -v max=$max -v min=$min -v inc=$inc 'BEGIN { new=last+inc; if (new<min) {new=min} ; if (new>max) {new=max}; print new}'`
 	echo Moving camera to $new
 	echo ok lets move the motor!
-	/usr/local/bin/servod &
-	sleep 0.1
-	echo 7=$new > /dev/servoblaster
-	sleep 0.2
-	echo 7=0 > /dev/servoblaster
 	echo $new > /srv/http/camera_position
-	killall servod
+	/root/atosdv2/pi-blaster/pi-blaster --pcm &
+	sleep 0.1
+	echo 6=$new > /dev/pi-blaster
+	sleep 0.2
+	//echo 6=0 > /dev/pi-blaster
+	killall pi-blaster
+	sleep 0.2
 	lockfile-remove /srv/http/writeable/cookie_lock
 fi
 	
